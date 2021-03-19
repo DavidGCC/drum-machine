@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.11.3",
     "bootstrap": "^4.6.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -20,8 +21,11 @@
       "react-app"
     ],
     "rules": {
-        "quotes": ["error", "double"],
-        "semi": "error"
+      "quotes": [
+        "error",
+        "double"
+      ],
+      "semi": "error"
     }
   },
   "browserslist": {
