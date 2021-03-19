@@ -157,8 +157,18 @@ const App = () => {
                 <DrumPads sounds={sounds} playSound={playSound} volume={volume} />
             </div>
             <div className="utility">
-                <h3 id="display">{currentPad?.name}</h3>
-                <Slider value={volume} onChange={handleVolumeChange} min={0} max={1} step={0.01} />
+                <h3 id="display">
+                    {
+                        currentPad?.name 
+                            ? currentPad?.name
+                            : "Start Jamming"
+                    }
+                </h3>
+                <div id="volumeSlider">
+                    <i className="fas fa-volume-off fa-lg" style={{ marginRight: 10 }}></i> 
+                    <Slider value={volume} onChange={handleVolumeChange} min={0} max={1} step={0.01} /> 
+                    <i className="fas fa-volume-up fa-lg" style={{ marginLeft: 10 }}></i>
+                </div>
             </div>
         </div>
     );

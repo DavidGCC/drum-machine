@@ -31,7 +31,7 @@ body {
     justify-content: center;
     align-items: center;
     color: #fff;
-    background-color: black;
+    background-color: #C51F5D;
     font-size: 1.5rem;
 }
 
@@ -52,5 +52,13 @@ body {
 }
 
 #display {
+    color: #fff;
+    height: 2rem;
+}
+
+#volumeSlider {
+    display: flex;
+    width: 100%;
+    align-items: center;
     color: #fff;
 }
