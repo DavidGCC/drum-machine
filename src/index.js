@@ -72,103 +72,197 @@ const sounds = [
     },
 ];
 
+let record = [];
+
 const getSoundByKey = key => sounds.find(sound => sound.triggerCode === key);
 
+const playSound = (sound, volume, isRecording) => {
+    const soundElem = document.getElementById(sound.id);
+    soundElem.currentTime = 0;
+    soundElem.volume = volume;
+    soundElem.play();
+    if (isRecording) {
+        const clickTime = new Date();
+        record = [...record, {
+            clickTime: clickTime.getTime(),
+            sound
+        }];
+        console.log(record);
+    }
+};
 
-const DrumPad = ({ sound, playSound }) => {
+const sleep = time => {
+    const date = new Date();
+    let currentDate = null;
+    do {
+        currentDate = new Date();
+    } while (currentDate - date < time);
+};
+
+const timeoutArr = [];
+const stopRecording = () => timeoutArr.forEach(i => clearTimeout(i));
+const playRecording = (recording) => {
+    let timeSum = 0;
+    stopRecording();
+    recording.forEach(async (item, index, arr) => {
+        if (index === 0) {
+            return null;
+        } else {
+            const timeToWait = item.clickTime - arr[index - 1].clickTime;
+            console.log(`playing ${item.sound.name} on ${timeToWait}`);
+            timeoutArr.push(setTimeout(() => playSound(item.sound, 0.4, false), timeSum + timeToWait));
+            timeSum += timeToWait;
+            // sleep(timeToWait);
+            // playSound(item.sound, 0.4, false);
+        }
+    });
+};
+
+
+
+const DrumPad = ({ sound, volume, isRecording }) => {
     return (
-        <div onClick={playSound} className="drum-pad">
+        <div onClick={() => playSound(sound, volume, isRecording)} className="drum-pad">
             <audio id={sound.id} src={sound.src} />
             {sound.trigger}
         </div>
     );
 };
 
-const DrumPads = ({ sounds, playSound }) => {
+const DrumPads = ({ sounds, volume, isRecording }) => {
     return (
         <div id="drum-pads">
             {
                 sounds.map(sound => (
-                    <DrumPad key={sound.id} sound={sound} playSound={() => playSound(sound)} />
+                    <DrumPad key={sound.id} sound={sound} volume={volume} isRecording={isRecording} />
                 ))
             }
         </div>
     );
 };
 
-const App = () => {
-    const [currentPad, setCurrentPad] = React.useState();
-    const [volume, setVolume] = React.useState(0.2);
-    const playSound = (sound) => {
-        setCurrentPad(sound);
-        const soundElem = document.getElementById(sound.id);
-        soundElem.currentTime = 0;
-        soundElem.volume = volume;
-        soundElem.play();
-    };
-
-    const handleKeyDown = e => {
-        // e.preventDefault();
-        switch (e.keyCode) {
-            case 81:
-                playSound(getSoundByKey(81));
-                break;
-            case 87:
-                playSound(getSoundByKey(87));
-                break;
-            case 69:
-                playSound(getSoundByKey(69));
-                break;
-            case 65:
-                playSound(getSoundByKey(65));
-                break;
-            case 83:
-                playSound(getSoundByKey(83));
-                break;
-            case 68:
-                playSound(getSoundByKey(68));
-                break;
-            case 90:
-                playSound(getSoundByKey(90));
-                break;
-            case 88:
-                playSound(getSoundByKey(88));
-                break;
-            case 67:
-                playSound(getSoundByKey(67));
-                break;
-            default:
-                return null;
-        }
-    };
-
+const VolumeSlider = ({ volume, setVolume }) => {
     const handleVolumeChange = (e, newVolume) => {
         e.preventDefault();
         setVolume(newVolume);
     };
+    return (
+        <div id="volumeSlider">
+            <i className="fas fa-volume-off fa-lg" style={{ marginRight: 10 }}></i>
+            <Slider value={volume} onChange={handleVolumeChange} min={0} max={1} step={0.01} />
+            <i className="fas fa-volume-up fa-lg" style={{ marginLeft: 10 }}></i>
+        </div>
+    );
+};
 
-    React.useEffect(() => {
-        window.addEventListener("keydown", handleKeyDown);
-    });
+const Recorder = ({ isRecording, setIsRecording }) => {
+    const toggleIsRecording = () => {
+        if (!isRecording) {
+            record = [{
+                clickTime: (new Date()).getTime()
+            }];
+        }
+        setIsRecording(!isRecording);
+    };
 
     return (
-        <div id="drum-machine"  onKeyDown={handleKeyDown}>
+        <div id="recorder">
+            <div onClick={toggleIsRecording}>
+                {
+                    isRecording
+                        ? <i className="fas fa-square square"></i>
+                        : <i className="fas fa-circle circle"></i>
+                }
+            </div>
+            <div onClick={() => playRecording(record)}>
+                {
+                    record.length > 1 && !isRecording 
+                        ? <i className="fas fa-play play"></i>
+                        : <i className="fas fa-play disabled"></i>
+                }
+            </div>
+        </div>
+    );
+};
+
+const App = () => {
+    const [currentPad, setCurrentPad] = React.useState();
+    const [volume, setVolume] = React.useState(0.3);
+    const [isRecording, setIsRecording] = React.useState(false);
+    React.useEffect(() => {
+        const eventListener = (e) => {
+            let sound;
+            switch (e.keyCode) {
+                case 81:
+                    sound = getSoundByKey(81);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 87:
+                    sound = getSoundByKey(87);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 69:
+                    sound = getSoundByKey(69);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 65:
+                    sound = getSoundByKey(65);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 83:
+                    sound = getSoundByKey(83);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 68:
+                    sound = getSoundByKey(68);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 90:
+                    sound = getSoundByKey(90);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 88:
+                    sound = getSoundByKey(88);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                case 67:
+                    sound = getSoundByKey(67);
+                    setCurrentPad(sound);
+                    playSound(sound, volume, isRecording);
+                    break;
+                default:
+                    return null;
+            }
+        };
+        window.addEventListener("keydown", eventListener);
+        return () => {
+            window.removeEventListener("keydown", eventListener);
+        };
+    }, [volume, isRecording]);
+
+    return (
+        <div id="drum-machine">
             <div>
-                <DrumPads sounds={sounds} playSound={playSound} volume={volume} />
+                <DrumPads sounds={sounds} volume={volume} isRecording={isRecording} />
             </div>
             <div className="utility">
                 <h3 id="display">
                     {
-                        currentPad?.name 
+                        currentPad?.name
                             ? currentPad?.name
                             : "Start Jamming"
                     }
                 </h3>
-                <div id="volumeSlider">
-                    <i className="fas fa-volume-off fa-lg" style={{ marginRight: 10 }}></i> 
-                    <Slider value={volume} onChange={handleVolumeChange} min={0} max={1} step={0.01} /> 
-                    <i className="fas fa-volume-up fa-lg" style={{ marginLeft: 10 }}></i>
-                </div>
+                <VolumeSlider volume={volume} setVolume={setVolume} />
+                <Recorder isRecording={isRecording} setIsRecording={setIsRecording} />
             </div>
         </div>
     );

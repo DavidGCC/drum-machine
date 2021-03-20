@@ -62,3 +62,25 @@ body {
     align-items: center;
     color: #fff;
 }
+
+#recorder {
+    display: flex;
+    width: 20%;
+    justify-content: space-around;
+}
+
+.circle {
+    color: black;
+}
+
+.square {
+    color: red;
+}
+
+.disabled {
+    color: gray !important;
+}
+
+.play {
+    color: green;
+}
