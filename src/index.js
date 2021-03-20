@@ -74,7 +74,7 @@ const sounds = [
 
 let record = [];
 
-const getSoundByKey = key => sounds.find(sound => sound.triggerCode === key);
+// const getSoundByKey = key => sounds.find(sound => sound.triggerCode === key);
 
 const playSound = (sound, volume, isRecording) => {
     const soundElem = document.getElementById(sound.id);
@@ -91,17 +91,10 @@ const playSound = (sound, volume, isRecording) => {
     }
 };
 
-const sleep = time => {
-    const date = new Date();
-    let currentDate = null;
-    do {
-        currentDate = new Date();
-    } while (currentDate - date < time);
-};
-
 const timeoutArr = [];
 const stopRecording = () => timeoutArr.forEach(i => clearTimeout(i));
-const playRecording = (recording) => {
+
+const playRecording = (recording, volume) => {
     let timeSum = 0;
     stopRecording();
     recording.forEach(async (item, index, arr) => {
@@ -109,32 +102,64 @@ const playRecording = (recording) => {
             return null;
         } else {
             const timeToWait = item.clickTime - arr[index - 1].clickTime;
-            console.log(`playing ${item.sound.name} on ${timeToWait}`);
-            timeoutArr.push(setTimeout(() => playSound(item.sound, 0.4, false), timeSum + timeToWait));
+            timeoutArr.push(setTimeout(() => {
+                playSound(item.sound, volume, false);
+            }, timeSum + timeToWait));
             timeSum += timeToWait;
-            // sleep(timeToWait);
-            // playSound(item.sound, 0.4, false);
         }
     });
 };
 
 
 
-const DrumPad = ({ sound, volume, isRecording }) => {
+const DrumPad = ({ sound, volume, isRecording, setCurrentPad }) => {
+    const [active, setActive] = React.useState(false);
+    const pad = React.useRef(null);
+
+    const clickStyle = {
+        transform: "scale(0.95)",
+        backgroundColor: "rgb(139, 211, 57)",
+        boxShadow: "none"
+    };
+
+    const buttonStyle = active ? clickStyle : {};
+    
+
+    const handleClick = () => {
+        setCurrentPad(sound);
+        playSound(sound, volume, isRecording);
+        setActive(true);
+        setTimeout(() => setActive(false), 100);
+    };
+
+
+    React.useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.keyCode === sound.triggerCode) {
+                playSound(sound, volume, isRecording);
+                setCurrentPad(sound);
+                setActive(true);
+                setTimeout(() => setActive(false), 100);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isRecording, sound, volume, setCurrentPad]);
+
     return (
-        <div onClick={() => playSound(sound, volume, isRecording)} className="drum-pad">
+        <div id={`${sound.id}-container`} onClick={handleClick} className="drum-pad" style={buttonStyle} ref={pad}>
             <audio id={sound.id} src={sound.src} />
             {sound.trigger}
         </div>
     );
 };
 
-const DrumPads = ({ sounds, volume, isRecording }) => {
+const DrumPads = ({ sounds, volume, isRecording, setCurrentPad }) => {
     return (
         <div id="drum-pads">
             {
                 sounds.map(sound => (
-                    <DrumPad key={sound.id} sound={sound} volume={volume} isRecording={isRecording} />
+                    <DrumPad key={sound.id} sound={sound} volume={volume} isRecording={isRecording} setCurrentPad={setCurrentPad} />
                 ))
             }
         </div>
@@ -143,7 +168,6 @@ const DrumPads = ({ sounds, volume, isRecording }) => {
 
 const VolumeSlider = ({ volume, setVolume }) => {
     const handleVolumeChange = (e, newVolume) => {
-        e.preventDefault();
         setVolume(newVolume);
     };
     return (
@@ -155,7 +179,7 @@ const VolumeSlider = ({ volume, setVolume }) => {
     );
 };
 
-const Recorder = ({ isRecording, setIsRecording }) => {
+const Recorder = ({ isRecording, setIsRecording, volume }) => {
     const toggleIsRecording = () => {
         if (!isRecording) {
             record = [{
@@ -170,15 +194,15 @@ const Recorder = ({ isRecording, setIsRecording }) => {
             <div onClick={toggleIsRecording}>
                 {
                     isRecording
-                        ? <i className="fas fa-square square"></i>
-                        : <i className="fas fa-circle circle"></i>
+                        ? <i className="fas fa-square fa-lg square"></i>
+                        : <i className="fas fa-circle fa-lg circle"></i>
                 }
             </div>
-            <div onClick={() => playRecording(record)}>
+            <div>
                 {
                     record.length > 1 && !isRecording 
-                        ? <i className="fas fa-play play"></i>
-                        : <i className="fas fa-play disabled"></i>
+                        ? <i onClick={() => playRecording(record, volume)} className="fas fa-play fa-lg play"></i>
+                        : <i className="fas fa-play fa-lg disabled"></i>
                 }
             </div>
         </div>
@@ -189,69 +213,11 @@ const App = () => {
     const [currentPad, setCurrentPad] = React.useState();
     const [volume, setVolume] = React.useState(0.3);
     const [isRecording, setIsRecording] = React.useState(false);
-    React.useEffect(() => {
-        const eventListener = (e) => {
-            let sound;
-            switch (e.keyCode) {
-                case 81:
-                    sound = getSoundByKey(81);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 87:
-                    sound = getSoundByKey(87);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 69:
-                    sound = getSoundByKey(69);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 65:
-                    sound = getSoundByKey(65);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 83:
-                    sound = getSoundByKey(83);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 68:
-                    sound = getSoundByKey(68);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 90:
-                    sound = getSoundByKey(90);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 88:
-                    sound = getSoundByKey(88);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                case 67:
-                    sound = getSoundByKey(67);
-                    setCurrentPad(sound);
-                    playSound(sound, volume, isRecording);
-                    break;
-                default:
-                    return null;
-            }
-        };
-        window.addEventListener("keydown", eventListener);
-        return () => {
-            window.removeEventListener("keydown", eventListener);
-        };
-    }, [volume, isRecording]);
-
+ 
     return (
         <div id="drum-machine">
             <div>
-                <DrumPads sounds={sounds} volume={volume} isRecording={isRecording} />
+                <DrumPads sounds={sounds} volume={volume} isRecording={isRecording} setCurrentPad={setCurrentPad} />
             </div>
             <div className="utility">
                 <h3 id="display">
@@ -262,7 +228,7 @@ const App = () => {
                     }
                 </h3>
                 <VolumeSlider volume={volume} setVolume={setVolume} />
-                <Recorder isRecording={isRecording} setIsRecording={setIsRecording} />
+                <Recorder isRecording={isRecording} setIsRecording={setIsRecording} volume={volume} />
             </div>
         </div>
     );
