@@ -94,6 +94,7 @@ const playSound = (sound, volume, isRecording) => {
 const timeoutArr = [];
 const stopRecording = () => timeoutArr.forEach(i => clearTimeout(i));
 
+
 const playRecording = (recording, volume) => {
     let timeSum = 0;
     stopRecording();
@@ -182,6 +183,7 @@ const VolumeSlider = ({ volume, setVolume }) => {
 const Recorder = ({ isRecording, setIsRecording, volume }) => {
     const toggleIsRecording = () => {
         if (!isRecording) {
+            stopRecording();
             record = [{
                 clickTime: (new Date()).getTime()
             }];
