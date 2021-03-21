@@ -149,7 +149,7 @@ const DrumPad = ({ sound, volume, isRecording, setCurrentPad }) => {
 
     return (
         <div id={`${sound.id}-container`} onClick={handleClick} className="drum-pad" style={buttonStyle} ref={pad}>
-            <audio id={sound.id} src={sound.src} />
+            <audio id={sound.trigger} className="clip" src={sound.src} />
             {sound.trigger}
         </div>
     );
