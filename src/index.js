@@ -77,7 +77,7 @@ let record = [];
 // const getSoundByKey = key => sounds.find(sound => sound.triggerCode === key);
 
 const playSound = (sound, volume, isRecording) => {
-    const soundElem = document.getElementById(sound.id);
+    const soundElem = document.getElementById(sound.trigger);
     soundElem.currentTime = 0;
     soundElem.volume = volume;
     soundElem.play();
